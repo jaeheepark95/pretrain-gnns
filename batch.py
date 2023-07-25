@@ -5,9 +5,11 @@ from torch_geometric.data import Data
 # https://pytorch-geometric.readthedocs.io/en/1.4.2/_modules/torch_geometric/data/batch.html
 
 # Context prediction에서 사용함.
-# Context prediction에서 데이터에 context structure를 포함시키기 때문에, batch 할 때, 
+# 기존의 batch는 batch_size 만큼의 data graph를 묶어서 하나의 커다란 disconnected graph로 처리함.
+# DataDataBatch(x=[200, 16], edge_index=[2, 1000], edge_attr=[2], y=[200], batch=[200], ptr=[3])
 
-# torch_geometric 내장 batch 함수는 mini-batch를 만들 때, 1개의 끊어져있는(끊어져 있는 subgraph들이 각각의 molecule) graph를 생성함.
+# 여기서는, 
+# Context prediction에서 데이터에 context structure를 포함시키기 때문에, batch 할 때, 
 class BatchSubstructContext(Data):
     r"""A plain old python object modeling a batch of graphs as one big
     (dicconnected) graph. With :class:`torch_geometric.data.Data` being the
@@ -24,9 +26,9 @@ class BatchSubstructContext(Data):
         super(BatchSubstructContext, self).__init__(**kwargs)
         self.batch = batch
         
-    # 
     
     # classmethod from_data_list(data_list: List[BaseData], follow_batch: Optional[List[str]] = None, exclude_keys: Optional[List[str]] = None)
+    
     
     # @staticmethod : 정적 메서드 선언. 파라미터에 self가 없음.
     # 인스턴스를 생성하지 않고, class.<함수이름>으로 바로 호출할 수 있음.
@@ -37,21 +39,28 @@ class BatchSubstructContext(Data):
         :class:`torch_geometric.data.Data` objects.
         The assignment vector :obj:`batch` is created on the fly."""
         
-        #keys = [set(data.keys) for data in data_list]
-        #keys = list(set.union(*keys))
-        #assert 'batch' not in keys
+        # 
+        # keys = [set(data.keys) for data in data_list]
+        # keys = list(set.union(*keys))
+        
+        ## assert 뒤의 조건이 True가 아니면 assert error를 발생시킴.
+        # assert 'batch' not in keys
+        
+        
         batch = BatchSubstructContext()
         keys = ["center_substruct_idx", "edge_attr_substruct", "edge_index_substruct", "x_substruct", "overlap_context_substruct_idx", "edge_attr_context", "edge_index_context", "x_context"]
 
         for key in keys:
             #print(key)
+            # batch["center_substruct_idx"] = [] ...
             batch[key] = []
 
-        #batch.batch = []
-        #used for pooling the context
+        # ? batch.batch = []
+        # used for pooling the context
         batch.batch_overlapped_context = []
         batch.overlapped_context_size = []
 
+        # cumulative sum : 누적합
         cumsum_main = 0
         cumsum_substruct = 0
         cumsum_context = 0
@@ -59,7 +68,8 @@ class BatchSubstructContext(Data):
         i = 0
         
         for data in data_list:
-            #If there is no context, just skip!!
+            # If there is no context, just skip!!
+            # hasattr(object, name) => bool
             if hasattr(data, "x_context"):
                 num_nodes = data.num_nodes
                 num_nodes_substruct = len(data.x_substruct)
@@ -101,6 +111,8 @@ class BatchSubstructContext(Data):
         batch.batch_overlapped_context = torch.cat(batch.batch_overlapped_context, dim=-1)
         batch.overlapped_context_size = torch.LongTensor(batch.overlapped_context_size)
 
+        # .contiguous() : tensor의 shape를 조작하면서, 메모리 주소 순서가 뒤죽박죽이 됨.
+        # contiguous()로 메모리 순서를 다시 맞춰 줄 수 있음.
         return batch.contiguous()
 
     # 

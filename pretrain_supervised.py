@@ -132,6 +132,7 @@ def main():
 
     #set up model
     model = GNN_graphpred(args.num_layer, args.emb_dim, num_tasks, JK = args.JK, drop_ratio = args.dropout_ratio, graph_pooling = args.graph_pooling, gnn_type = args.gnn_type)
+    
     if not args.input_model_file == "":
         model.from_pretrained(args.input_model_file + ".pth")
     

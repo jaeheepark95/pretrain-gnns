@@ -33,8 +33,7 @@ def cycle_index(num, shift):
     return arr        
 
 def main():
-    data_list = {'name': 'pey', 'phone': '010-9999-1234'}
-    data_list.keys()
+    data_list = dataset
     print([data_list.keys()])
     # keys = [set(data.keys) for data in data_list]
     # print(keys)

@@ -7,6 +7,8 @@ import pickle
 def get_test_acc(event_file):
     val_auc_list = np.zeros(100)
     test_auc_list = np.zeros(100)
+    
+    # event에서 출력
     for e in list(tf.train.summary_iterator(event_file)):
         if len(e.summary.value) == 0:
             continue
