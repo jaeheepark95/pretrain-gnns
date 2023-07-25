@@ -27,11 +27,17 @@ class GINConv(MessagePassing):
     """
     def __init__(self, emb_dim, aggr = "add"):
         super(GINConv, self).__init__()
-        #multi-layer perceptron
+        # multi-layer perceptron
         self.mlp = torch.nn.Sequential(torch.nn.Linear(emb_dim, 2*emb_dim), torch.nn.ReLU(), torch.nn.Linear(2*emb_dim, emb_dim))
+        # nn.Embedding, https://wikidocs.net/64779
+        # 각각의 단어들을 정수로 맵핑한 후, vector로 맵핑한다. embedding lookup table 의 행의 수는 모든 단어의 수
+        # nn.Embedding(num_embeddings=, embedding_dim=, padding_idx=)
+        # num_embeddings : 임베딩 할 단어들의 수, 단어 집합의 크기
         self.edge_embedding1 = torch.nn.Embedding(num_bond_type, emb_dim)
         self.edge_embedding2 = torch.nn.Embedding(num_bond_direction, emb_dim)
 
+        # xavier_uniform : 나중에 필요하면 자세히 보자
+        # 
         torch.nn.init.xavier_uniform_(self.edge_embedding1.weight.data)
         torch.nn.init.xavier_uniform_(self.edge_embedding2.weight.data)
         self.aggr = aggr

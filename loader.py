@@ -6,8 +6,11 @@ import pickle
 import pandas as pd
 import numpy as np
 import networkx as nx
+# 
 from rdkit import Chem
+
 from rdkit.Chem import Descriptors
+
 from rdkit.Chem import AllChem
 # from rdkit import DataStructs
 from rdkit.Chem.rdMolDescriptors import GetMorganFingerprintAsBitVect
@@ -20,7 +23,9 @@ from itertools import repeat, product, chain
 
 # allowable node and edge features
 allowable_features = {
+    # 
     'possible_atomic_num_list' : list(range(1, 119)),
+    # 
     'possible_formal_charge_list' : [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5],
     'possible_chirality_list' : [
         Chem.rdchem.ChiralType.CHI_UNSPECIFIED,
@@ -50,6 +55,9 @@ allowable_features = {
     ]
 }
 
+# rdkit mol object를 geometric에서 사용하는 데이터 형식으로 변형
+# Data(x=[29, 1], edge_index=[2, 64], edge_attr=[64], y=[1])
+
 def mol_to_graph_data_obj_simple(mol):
     """
     Converts rdkit mol object to graph Data object required by the pytorch
@@ -58,9 +66,11 @@ def mol_to_graph_data_obj_simple(mol):
     :param mol: rdkit mol object
     :return: graph data object with the attributes: x, edge_index, edge_attr
     """
-    # atoms
+    #
     num_atom_features = 2   # atom type,  chirality tag
+    #
     atom_features_list = []
+    
     for atom in mol.GetAtoms():
         atom_feature = [allowable_features['possible_atomic_num_list'].index(
             atom.GetAtomicNum())] + [allowable_features[
